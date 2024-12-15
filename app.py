@@ -3,6 +3,8 @@ import logging
 import asyncio
 import tempfile
 from typing import Dict, Any
+from datetime import datetime
+import pytz
 
 from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
@@ -66,8 +68,15 @@ def get_vector_store() -> Qdrant:
 
 def create_qa_chain(vector_store: Qdrant) -> ConversationalRetrievalChain:
     """Create and return the conversational question-answering chain."""
-    prompt_template = """
-    You are Klaris, a friendly and intelligent virtual assistant specifically designed for Universitas Klabat (UNKLAB). Follow these guidelines:
+    # Get current date and time in Manado timezone
+    tz = pytz.timezone('Asia/Makassar')  # Manado uses WITA (Waktu Indonesia Tengah)
+    current_time = datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S %Z")
+    
+    prompt_template = f"""
+    You are Klaris, a friendly and intelligent virtual assistant specifically designed for Universitas Klabat (UNKLAB). 
+    Current date and time in universitas klabat: {current_time}
+
+    Follow these guidelines:
 
     1. Response Guidelines:
        - Provide concise yet comprehensive answers
@@ -97,11 +106,11 @@ def create_qa_chain(vector_store: Qdrant) -> ConversationalRetrievalChain:
        - Ask for clarification if needed
        - Acknowledge information limitations
 
-    Previous Chat History: {chat_history}
-    Additional Context: {context}
-    Current Question: {question}
+    Previous Chat History: {{chat_history}}
+    Additional Context: {{context}}
+    Current Question: {{question}}
 
-    If the question is not about UNKLAB or yourself, respond with: "Maaf, saya hanya dapat menjawab pertanyaan seputar Universitas Klabat (UNKLAB) dan tentang diri saya sebagai asisten virtual UNKLAB."
+    If the question is not about Universitas klabat (UNKLAB) or yourself, respond with: "Maaf, saya hanya dapat menjawab pertanyaan seputar Universitas Klabat (UNKLAB), silahkan bertanya tentang unklab."
 
     Otherwise, provide a professional and informative answer in Indonesian:
     """
@@ -158,7 +167,7 @@ async def query_qa():
         answer = result['answer']
         source_docs = result.get('source_documents', [])
 
-        logger.info(f"Answer generated: {answer[:50]}...")  # Log first 50 characters
+        # logger.info(f"Answer generated: {answer[:50]}...")  # Log first 50 characters
 
         # Generate TTS
         audio_file = await text_to_speech(answer)
