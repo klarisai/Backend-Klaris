@@ -68,9 +68,14 @@ def get_vector_store() -> Qdrant:
 
 def create_qa_chain(vector_store: Qdrant) -> ConversationalRetrievalChain:
     """Create and return the conversational question-answering chain."""
-    prompt_template = """
-    You are Klaris, a friendly and intelligent virtual assistant specifically designed for Universitas Klabat (UNKLAB). Follow these guidelines:
-
+    tz = pytz.timezone('Asia/Makassar')
+    current_time = datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S %Z")
+    
+    prompt_template = f"""
+    You are Klaris, a friendly and intelligent virtual assistant specifically designed for Universitas Klabat (UNKLAB). 
+    Current date and time in universitas klabat: {current_time}
+    Follow these guidelines:
+    
     1. Response Guidelines:
        - Provide concise yet comprehensive answers
        - Focus only on relevant UNKLAB information
